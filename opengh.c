@@ -56,6 +56,7 @@ void generate_project_url(char *file)
 	FILE *fp;
 	long f_size;
 	char *buffer;
+	char *url;
 	size_t result;
 
 	
@@ -78,12 +79,20 @@ void generate_project_url(char *file)
 		fclose(fp);
 		
 		/* Search for URL in config */
-		if(!slre_compile(&slre, "(github.com.+).git")) {
+		if(!slre_compile(&slre, "github.com.(.+).git")) {
 			printf("Error compiling RE: %s\n", slre.err_str);
 		} else if(!slre_match(&slre, buffer, strlen(buffer), captures)) {
 			printf("Not match\n" );
 		} else {
-			printf("Match: %.*s\n", captures[1].len, captures[1].ptr);
+			sprintf(buffer, "%.*s", captures[1].len, captures[1].ptr);
+			/* concat string and open project */
+			url = malloc((strlen(buffer)+23)*sizeof(char));
+			strcat(url, "open https://github.com/");
+			strcat(url, buffer);
+			system(url);
+			
+			free(url);
 		}
+		free(buffer);
 	}
 }

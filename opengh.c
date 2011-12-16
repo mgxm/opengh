@@ -3,10 +3,15 @@
 #include <string.h>
 #include <unistd.h>
 #include <limits.h>
+#include "lib/slre.h"
 
 #ifndef GIT_CONFIG
 #define GIT_CONFIG "/.git/config"
-#endif
+#endif 
+
+
+struct slre        slre;
+struct cap         captures[4 + 1];
 
 int search_github_config(char *fullpath, const char *path);
 void generate_project_url(char *file);
@@ -50,8 +55,9 @@ void generate_project_url(char *file)
 {
 	FILE *fp;
 	long f_size;
-	char *buffer, *urlpos;
+	char *buffer;
 	size_t result;
+
 	
 	if ((fp = fopen(file, "r")) == NULL) {
 	    printf("Cannot open file.\n");
@@ -71,10 +77,13 @@ void generate_project_url(char *file)
 		}
 		fclose(fp);
 		
-		/* Search for URL parameter in config */
-		urlpos = strstr(buffer,"url");
-		printf("%s\n", urlpos);
-		
-		free(buffer);
+		/* Search for URL in config */
+		if(!slre_compile(&slre, "(github.com.+).git")) {
+			printf("Error compiling RE: %s\n", slre.err_str);
+		} else if(!slre_match(&slre, buffer, strlen(buffer), captures)) {
+			printf("Not match\n" );
+		} else {
+			printf("Match: %.*s\n", captures[1].len, captures[1].ptr);
+		}
 	}
 }

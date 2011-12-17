@@ -5,7 +5,8 @@
  * can do whatever you want with this stuff. If we meet some day, and you think
  * this stuff is worth it, you can buy me a beer in return.
  *
- */
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,92 +16,73 @@
 
 #ifndef GIT_CONFIG
 #define GIT_CONFIG "/.git/config"
-#endif 
+#endif
 
+struct slre slre;
+struct cap captures[4 + 1];
 
-struct slre        slre;
-struct cap         captures[4 + 1];
-
-int search_github_config(char *fullpath, const char *path);
-void generate_project_url(char *file);
+int find_git_config(char *fullpath, char const *path);
+void open_github_website(char const *file);
 
 int main(int argc, char const *argv[])
 {
-	char currentDirectory[PATH_MAX+1];
-	char fullpath[PATH_MAX+strlen(GIT_CONFIG)];
+    char current_directory[PATH_MAX + 1];
+    char fullpath[PATH_MAX + strlen(GIT_CONFIG) + 1];
 
-	getcwd(currentDirectory, PATH_MAX);
+    getcwd(current_directory, PATH_MAX);
 
-	if(search_github_config(fullpath, currentDirectory) == 0) {
-		generate_project_url(fullpath);
-	} else
-		printf("%s\n", "The directory was not found");
+    if (find_git_config(fullpath, current_directory))
+        open_github_website(fullpath);
+    else
+        printf("No valid git repository found for the current directory.\n");
 
-	return 0;
+    return 0;
 }
 
-/*
- * 0 - If Github config exists
- * 1 - If Github config doesn't exists
- */
-int search_github_config(char *fullpath, const char *path)
+int find_git_config(char *fullpath, char const *path)
 {
-	char tmp[(strlen(path)+strlen(GIT_CONFIG)+1)*sizeof(char)];
+    strcpy(fullpath, path);
+    strcat(fullpath, GIT_CONFIG);
 
-	strcat(tmp, path);
-	strcat(tmp, GIT_CONFIG);
-
-	if (access(tmp, F_OK) == 0)
-	{
-		strcpy(fullpath, tmp);
-		return 0;
-	}
-	else
-		return 1;
+    return (access(fullpath, F_OK) == 0);
 }
 
-void generate_project_url(char *file)
+void open_github_website(char const *file)
 {
-	FILE *fp;
-	long f_size;
-	char *buffer;
-	char *url;
-	size_t result;
-
+    FILE *fp;
+    size_t size, result;
+    char *buffer, *url;
 	
-	if ((fp = fopen(file, "r")) == NULL) {
-	    printf("Cannot open file.\n");
-	    exit(1);
-	} else {
-		/* File size */
-		fseek(fp, 0, SEEK_END);
-		f_size = ftell(fp);
-		fseek(fp, 0, SEEK_SET);
+    if ((fp = fopen(file, "r")) == NULL) {
+        printf("Could not open the git configuration file..\n");
+        exit(1);
+    } else {
+        fseek(fp, 0, SEEK_END);
+        size = ftell(fp);
+        rewind(fp);
 		
-		/* Copy the file into a string */
-		buffer = malloc(f_size*sizeof(char));
-		result = fread(buffer, 1, f_size, fp);
-		if(result != f_size) {
-			printf("%s\n", "Reading Error!");
-			exit(1);
-		}
-		fclose(fp);
+		/* reads the configuration file */
+        buffer = (char *)malloc(size * sizeof(char));
+        result = fread(buffer, 1, size, fp);
+        if (result != size) {
+            printf("An error occurred while trying to read the git configuration file.\n");
+            exit(1);
+        }
+        fclose(fp);
 		
-		/* Search for URL in config */
-		if(!slre_compile(&slre, "github.com.(.+).git")) {
-			printf("Error compiling RE: %s\n", slre.err_str);
-		} else if(!slre_match(&slre, buffer, strlen(buffer), captures)) {
-			printf("Not match\n" );
-		} else {
-			sprintf(buffer, "%.*s", captures[1].len, captures[1].ptr);
-			/* concat string and open project */
-			url = malloc((strlen(buffer)+23)*sizeof(char));
-			strcat(url, "open https://github.com/");
-			strcat(url, buffer);
-			system(url);
-			
-			free(url);
-		}
-		free(buffer);
-	}
+		/* search by the github's url */
+        if (!slre_compile(&slre, "github.com.(.+).git")) {
+            printf("An error occurred while compiling the regular expression: %s\n", slre.err_str);
+        } else if(!slre_match(&slre, buffer, strlen(buffer), captures)) {
+            printf("Was not found a github repository in the git configuration file.\n");
+        } else {
+            sprintf(buffer, "%.*s", captures[1].len, captures[1].ptr);
+            url = (char *)malloc((strlen(buffer) + 26) * sizeof(char));
+            strcpy(url, "open https://github.com/");
+            strcat(url, buffer);
+            system(url);
+            free(url);
+        }
+        free(buffer);
+    }
 }

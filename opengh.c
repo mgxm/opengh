@@ -24,7 +24,7 @@ struct cap captures[4 + 1];
 int find_git_config(char *fullpath, char const *path);
 void open_github_website(char const *file);
 
-int main(int argc, char const *argv[])
+int main(void)
 {
     char current_directory[PATH_MAX + 1];
     char fullpath[PATH_MAX + strlen(GIT_CONFIG) + 1];

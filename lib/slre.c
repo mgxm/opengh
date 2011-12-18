@@ -23,7 +23,7 @@ enum {END, BRANCH, ANY, EXACT, ANYOF, ANYBUT, OPEN, CLOSE, BOL, EOL,
 static struct {
 	const char	*name;
 	int		narg;
-	const char	*flags;	
+	const char	*flags;
 } opcodes[] = {
 	{"END",		0, ""},		/* End of code block or program	*/
 	{"BRANCH",	2, "oo"},	/* Alternative operator, "|"	*/
@@ -118,12 +118,12 @@ slre_dump(const struct slre *r, FILE *fp)
 				break;
 			case 'o':
 				(void) fprintf(fp, "%d ",
-				    pc + r->code[pc + 1] - i);
+					pc + r->code[pc + 1] - i);
 				pc++;
 				break;
 			case 'D':
 				print_character_set(fp, r->data +
-				    r->code[pc + 1], r->code[pc + 2]);
+					r->code[pc + 1], r->code[pc + 2]);
 				pc += 2;
 				break;
 			case 'd':
@@ -484,15 +484,15 @@ match(const struct slre *r, int pc, const char *s, int len,
 			if (res == 0) {
 				*ofs = saved_offset;
 				res = match(r, pc + r->code[pc + 1],
-				    s, len, ofs, caps);
+					s, len, ofs, caps);
 			}
-			pc += r->code[pc + 2]; 
+			pc += r->code[pc + 2];
 			break;
 		case EXACT:
 			res = 0;
 			n = r->code[pc + 2];	/* String length */
 			if (n <= len - *ofs && !memcmp(s + *ofs, r->data +
-			    r->code[pc + 1], n)) {
+				r->code[pc + 1], n)) {
 				(*ofs) += n;
 				res = 1;
 			}
@@ -591,7 +591,7 @@ match(const struct slre *r, int pc, const char *s, int len,
 		case CLOSE:
 			if (caps != NULL)
 				caps[r->code[pc + 1]].len = (s + *ofs) -
-				    caps[r->code[pc + 1]].ptr;
+					caps[r->code[pc + 1]].ptr;
 			pc += 2;
 			break;
 		case END:
@@ -659,7 +659,7 @@ int main(int argc, char *argv[])
 		for (i = 0; i < 20; i++)
 			if (caps[i].len > 0)
 				printf("Substring %d: [%.*s]\n", i,
-				    caps[i].len, caps[i].ptr);
+					caps[i].len, caps[i].ptr);
 	}
 
 	return (0);

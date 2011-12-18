@@ -43,7 +43,7 @@ void open_github_website(char const *file)
 	FILE *fp;
 	size_t size, result;
 	char *buffer, *url;
-	
+
 	if ((fp = fopen(file, "r")) == NULL) {
 		printf("Could not open the git configuration file..\n");
 		exit(1);
@@ -51,7 +51,7 @@ void open_github_website(char const *file)
 		fseek(fp, 0, SEEK_END);
 		size = ftell(fp);
 		rewind(fp);
-		
+
 		/* reads the configuration file */
 		buffer = (char *)malloc(size * sizeof(char));
 		result = fread(buffer, 1, size, fp);
@@ -60,7 +60,7 @@ void open_github_website(char const *file)
 			exit(1);
 		}
 		fclose(fp);
-		
+
 		/* search by the github's url */
 		if (!slre_compile(&slre, "github.com.(.+).git")) {
 			printf("An error occurred while compiling the regular expression: %s\n", slre.err_str);

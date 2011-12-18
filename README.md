@@ -1,6 +1,6 @@
 To build the project run:
 
-	make
+	make && make install
 	
 That's it!
 

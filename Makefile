@@ -1,3 +1,5 @@
+prefix=/usr/local
+
 all: opengh
 
 opengh: slre.o opengh.o
@@ -8,6 +10,11 @@ slre.o: lib/slre.c
 	
 opengh.o: opengh.c lib/slre.h
 	gcc -o opengh.o -c opengh.c -W -Wall -ansi -pedantic
+
+install: all
+	install -m 0755 opengh $(prefix)/bin
+
+.PHONY: install
 	
 clean:
 	rm -rf *.o

@@ -1,23 +1,27 @@
 prefix=/usr/local
+bindir=$(prefix)/bin
+CC=gcc
+CFLAGS=-W -Wall -ansi -pedantic
+EXEC=opengh
 
-all: opengh
+all: $(EXEC)
 
 opengh: slre.o opengh.o
-	gcc -o opengh opengh.o slre.o
+	$(CC) -o $@ $^
 	
 slre.o: lib/slre.c
-	gcc -o slre.o -c lib/slre.c -W -Wall -ansi -pedantic
+	$(CC) -o $@ -c $< $(CFLAGS)
 	
 opengh.o: opengh.c lib/slre.h
-	gcc -o opengh.o -c opengh.c -W -Wall -ansi -pedantic
+	$(CC) -o $@ -c $< $(CFLAGS)
 
 install: all
-	install -m 0755 opengh $(prefix)/bin
+	install -m 0755 opengh $(bindir)
 
-.PHONY: install
-	
+.PHONY: clean mrproper install
+
 clean:
-	rm -rf *.o
+	rm -rf *.o *~
 	
 mrproper: clean
-	rm -rf opengh
+	rm -rf $(EXEC)

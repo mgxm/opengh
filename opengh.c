@@ -6,7 +6,7 @@
 #include "lib/slre.h"
 
 #ifndef GIT_CONFIG
-#define GIT_CONFIG "/.git/config"
+#define GIT_CONFIG ".git/config"
 #endif
 
 struct slre slre;
@@ -32,10 +32,32 @@ int main(void)
 
 int find_git_config(char *fullpath, char const *path)
 {
-	strcpy(fullpath, path);
-	strcat(fullpath, GIT_CONFIG);
-
-	return (access(fullpath, F_OK) == 0);
+	char *test, *buffer;
+	size_t size;
+	int ret = 0;
+	
+	test = strtok((char*)path, "/");
+	strcpy(fullpath, "/");
+	strcat(fullpath, test);
+	strcat(fullpath, "/");
+	while (test != NULL)
+	{
+	    test = strtok (NULL, "/");
+		strcat(fullpath, test);
+		strcat(fullpath, "/");
+		
+		size = sizeof(fullpath);
+		buffer = (char *)malloc(size * sizeof(char));
+		strcpy(buffer, fullpath);
+		strcat(buffer, GIT_CONFIG);
+		
+		if (access(buffer, F_OK) == 0) {
+			strcpy(fullpath, buffer);
+			ret = 1;
+			break;
+		}
+	}
+	return ret;
 }
 
 void open_github_website(char const *file)
